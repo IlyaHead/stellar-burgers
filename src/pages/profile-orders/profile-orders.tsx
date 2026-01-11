@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from '../../services/store';
 import {
   fetchUserOrders,
   selectUserOrders
-} from '../../services/slices/orderSlice';
+} from '../../services/slices/order/orderSlice';
 
 export const ProfileOrders: FC = () => {
   const dispatch = useDispatch();

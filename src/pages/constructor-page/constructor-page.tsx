@@ -3,7 +3,7 @@ import { useEffect, FC } from 'react';
 import {
   fetchIngredients,
   selectIsIngredientsLoading
-} from '../../services/slices/ingredientsSlice';
+} from '../../services/slices/ingredientsSlice/ingredientsSlice';
 import { Preloader } from '../../components/ui';
 import { BurgerIngredients, BurgerConstructor } from '../../components';
 import styles from './constructor-page.module.css';

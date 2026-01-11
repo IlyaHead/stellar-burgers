@@ -1,38 +1,35 @@
-import { combineReducers, configureStore } from '@reduxjs/toolkit';
+import { configureStore } from '@reduxjs/toolkit';
+import { combineReducers } from '@reduxjs/toolkit';
+
+import { ingredientsSlice } from './slices/ingredientsSlice/ingredientsSlice';
+import { userSlice } from './slices/user/userSlice';
+import { constructorSlice } from './slices/constructor/constructorSlice';
+import { feedsSlice } from './slices/feeds/feedsSlice';
+import { orderSlice } from './slices/order/orderSlice';
+
 import {
   TypedUseSelectorHook,
   useDispatch as dispatchHook,
   useSelector as selectorHook
 } from 'react-redux';
 
-// импорт всех редьюсеров
-import ingredientsReducer from './slices/ingredientsSlice';
-import constructorReducer from './slices/constructorSlice';
-import userReducer from './slices/userSlice';
-import feedsReducer from './slices/feedsSlice';
-import orderReducer from './slices/orderSlice';
-
-// собираем корневой редьюсер
-const rootReducer = combineReducers({
-  ingredients: ingredientsReducer,
-  burgerConstructor: constructorReducer,
-  user: userReducer,
-  feeds: feedsReducer,
-  order: orderReducer
+export const rootReducer = combineReducers({
+  [ingredientsSlice.name]: ingredientsSlice.reducer,
+  [userSlice.name]: userSlice.reducer,
+  [constructorSlice.name]: constructorSlice.reducer,
+  [feedsSlice.name]: feedsSlice.reducer,
+  [orderSlice.name]: orderSlice.reducer
 });
 
-// настраиваем хранилище
 const store = configureStore({
   reducer: rootReducer,
   devTools: process.env.NODE_ENV !== 'production'
 });
 
-// типизация RootState и AppDispatch
 export type RootState = ReturnType<typeof rootReducer>;
 export type AppDispatch = typeof store.dispatch;
 
-// типизированные хуки для использования в компонентах
-export const useDispatch: () => AppDispatch = dispatchHook;
+export const useDispatch: () => AppDispatch = () => dispatchHook();
 export const useSelector: TypedUseSelectorHook<RootState> = selectorHook;
 
 export default store;

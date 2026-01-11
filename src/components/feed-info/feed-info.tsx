@@ -1,6 +1,6 @@
 import { FC, useEffect } from 'react';
 import { useDispatch, useSelector } from '../../services/store';
-import { fetchFeeds } from '../../services/slices/feedsSlice';
+import { fetchFeeds } from '../../services/slices/feeds/feedsSlice';
 import { TOrder } from '@utils-types';
 import { FeedInfoUI } from '../ui/feed-info';
 

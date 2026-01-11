@@ -5,9 +5,9 @@ import { useSelector, useDispatch } from '../../services/store';
 import {
   selectConstructorData,
   clearConstructor
-} from '../../services/slices/constructorSlice';
-import { selectUser } from '../../services/slices/userSlice';
-import { postOrder, clearOrder } from '../../services/slices/orderSlice';
+} from '../../services/slices/constructor/constructorSlice';
+import { selectUser } from '../../services/slices/user/userSlice';
+import { postOrder, clearOrder } from '../../services/slices/order/orderSlice';
 
 export const BurgerConstructor: FC = () => {
   const navigate = useNavigate();

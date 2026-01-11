@@ -1,13 +1,13 @@
 import { FC, useMemo, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useDispatch, useSelector } from '../../services/store';
-import { selectIngredients } from '../../services/slices/ingredientsSlice';
+import { selectIngredients } from '../../services/slices/ingredientsSlice/ingredientsSlice';
 import {
   fetchOrderByNumber,
   selectOrderData
-} from '../../services/slices/orderSlice';
-import { selectOrders as selectFeedsOrders } from '../../services/slices/feedsSlice';
-import { selectUserOrders } from '../../services/slices/orderSlice';
+} from '../../services/slices/order/orderSlice';
+import { selectOrders as selectFeedsOrders } from '../../services/slices/feeds/feedsSlice';
+import { selectUserOrders } from '../../services/slices/order/orderSlice';
 import { TIngredient } from '@utils-types';
 import { OrderInfoUI } from '../ui/order-info';
 

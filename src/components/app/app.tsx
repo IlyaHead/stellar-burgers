@@ -1,8 +1,8 @@
 import { useEffect } from 'react';
 import { Routes, Route, useLocation, useNavigate } from 'react-router-dom';
 import { useDispatch } from '../../services/store';
-import { fetchIngredients } from '../../services/slices/ingredientsSlice';
-import { checkUserAuth } from '../../services/slices/userSlice';
+import { fetchIngredients } from '../../services/slices/ingredientsSlice/ingredientsSlice';
+import { checkUserAuth } from '../../services/slices/user/userSlice';
 import '../../index.css';
 import styles from './app.module.css';
 
