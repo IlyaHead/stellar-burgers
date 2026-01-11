@@ -1,22 +1,25 @@
-import { FC, memo } from 'react';
+import { FC, memo, useMemo } from 'react';
 import { useLocation } from 'react-router-dom';
 import { BurgerIngredientUI } from '@ui';
 import { TBurgerIngredientProps } from './type';
-import { useDispatch } from '../../services/store';
+import { useDispatch, useSelector } from '../../services/store';
 import { addIngredient } from '../../services/slices/constructorSlice';
 
 export const BurgerIngredient: FC<TBurgerIngredientProps> = memo(
-  ({ ingredient, count }) => {
+  ({ ingredient }) => {
     const dispatch = useDispatch();
     const location = useLocation();
 
-    let ingredientCount =
-      count !== undefined ? count : (ingredient as any).count;
+    const constructorItems = useSelector((state) => state.burgerConstructor);
 
-    // Логика для булок, булка может быть только одна в заказе
-    if (ingredient.type === 'bun' && ingredientCount > 0) {
-      ingredientCount = 1;
-    }
+    const count = useMemo(() => {
+      if (ingredient.type === 'bun') {
+        return constructorItems.bun?._id === ingredient._id ? 1 : 0;
+      }
+      return constructorItems.ingredients.filter(
+        (item) => item._id === ingredient._id
+      ).length;
+    }, [constructorItems, ingredient]);
 
     const handleAdd = () => {
       dispatch(addIngredient(ingredient));
@@ -25,7 +28,7 @@ export const BurgerIngredient: FC<TBurgerIngredientProps> = memo(
     return (
       <BurgerIngredientUI
         ingredient={ingredient}
-        count={ingredientCount > 0 ? ingredientCount : undefined}
+        count={count > 0 ? count : undefined}
         locationState={{ background: location }}
         handleAdd={handleAdd}
       />

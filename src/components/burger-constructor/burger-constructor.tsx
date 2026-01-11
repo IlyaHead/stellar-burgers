@@ -1,6 +1,5 @@
 import { FC, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { TIngredient } from '@utils-types';
 import { BurgerConstructorUI } from '@ui';
 import { useSelector, useDispatch } from '../../services/store';
 import {

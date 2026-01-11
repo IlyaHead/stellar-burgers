@@ -1,20 +1,35 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import {
-  loginUserApi,
-  registerUserApi,
-  logoutApi,
-  getUserApi,
-  updateUserApi,
   TRegisterData,
-  TLoginData
+  TLoginData,
+  registerUserApi,
+  loginUserApi,
+  updateUserApi,
+  logoutApi,
+  getUserApi
 } from '../../utils/burger-api';
 import { TUser } from '@utils-types';
 import { deleteCookie, setCookie } from '../../utils/cookie';
 
-// регистрации пользователя
-export const register = createAsyncThunk(
+interface TUserState {
+  user: TUser | null;
+  isAuthChecked: boolean;
+  isAuthenticated: boolean;
+  loginRequest: boolean;
+  error: string | null;
+}
+
+const initialState: TUserState = {
+  user: null,
+  isAuthChecked: false,
+  isAuthenticated: false,
+  loginRequest: false,
+  error: null
+};
+
+export const registerUser = createAsyncThunk<TUser, TRegisterData>(
   'user/register',
-  async (data: TRegisterData) => {
+  async (data) => {
     const res = await registerUserApi(data);
     setCookie('accessToken', res.accessToken);
     localStorage.setItem('refreshToken', res.refreshToken);
@@ -22,10 +37,9 @@ export const register = createAsyncThunk(
   }
 );
 
-// логин
-export const login = createAsyncThunk(
+export const loginUser = createAsyncThunk<TUser, TLoginData>(
   'user/login',
-  async (data: TLoginData) => {
+  async (data) => {
     const res = await loginUserApi(data);
     setCookie('accessToken', res.accessToken);
     localStorage.setItem('refreshToken', res.refreshToken);
@@ -33,42 +47,27 @@ export const login = createAsyncThunk(
   }
 );
 
-// выход из системы
-export const logoutUser = createAsyncThunk(
-  'user/logout',
-  async (_, { dispatch }) => {
-    await logoutApi();
-    deleteCookie('accessToken');
-    localStorage.removeItem('refreshToken');
-  }
-);
-
-// проверка пользователя
-export const checkUserAuth = createAsyncThunk('user/checkAuth', async () => {
-  const res = await getUserApi();
-  return res.user;
-});
-
-// обновление данных пользователя
-export const updateUser = createAsyncThunk(
+export const updateUser = createAsyncThunk<TUser, Partial<TRegisterData>>(
   'user/update',
-  async (data: TRegisterData) => {
+  async (data) => {
     const res = await updateUserApi(data);
     return res.user;
   }
 );
 
-interface UserState {
-  user: TUser | null;
-  isAuthChecked: boolean;
-  error: string | null;
-}
+export const checkUserAuth = createAsyncThunk<TUser>(
+  'user/checkAuth',
+  async () => {
+    const res = await getUserApi();
+    return res.user;
+  }
+);
 
-const initialState: UserState = {
-  user: null,
-  isAuthChecked: false,
-  error: null
-};
+export const logoutUser = createAsyncThunk('user/logout', async () => {
+  await logoutApi();
+  deleteCookie('accessToken');
+  localStorage.removeItem('refreshToken');
+});
 
 export const userSlice = createSlice({
   name: 'user',
@@ -76,41 +75,62 @@ export const userSlice = createSlice({
   reducers: {},
   extraReducers: (builder) => {
     builder
-      // регистрация
-      .addCase(register.fulfilled, (state, action) => {
+      .addCase(loginUser.pending, (state) => {
+        state.loginRequest = true;
+        state.error = null;
+      })
+      .addCase(loginUser.fulfilled, (state, action) => {
+        state.loginRequest = false;
+        state.isAuthenticated = true;
         state.user = action.payload;
         state.isAuthChecked = true;
       })
-      // логин
-      .addCase(login.fulfilled, (state, action) => {
+      .addCase(loginUser.rejected, (state, action) => {
+        state.loginRequest = false;
+        state.error = action.error.message || 'Ошибка входа';
+        state.isAuthChecked = true;
+      })
+      .addCase(registerUser.fulfilled, (state, action) => {
+        state.isAuthenticated = true;
         state.user = action.payload;
         state.isAuthChecked = true;
       })
-      // выход из системы
-      .addCase(logoutUser.fulfilled, (state) => {
-        state.user = null;
+      .addCase(updateUser.fulfilled, (state, action) => {
+        state.user = action.payload;
       })
-      // проверка пользователя
       .addCase(checkUserAuth.pending, (state) => {
         state.isAuthChecked = false;
       })
       .addCase(checkUserAuth.fulfilled, (state, action) => {
         state.user = action.payload;
+        state.isAuthenticated = true;
         state.isAuthChecked = true;
       })
       .addCase(checkUserAuth.rejected, (state) => {
-        state.isAuthChecked = true; // Проверка завершена, даже если юзер не найден
+        state.isAuthChecked = true;
+        state.isAuthenticated = false;
       })
-      // обновление данных
-      .addCase(updateUser.fulfilled, (state, action) => {
-        state.user = action.payload;
+      .addCase(logoutUser.fulfilled, (state) => {
+        state.user = null;
+        state.isAuthenticated = false;
       });
   },
   selectors: {
     selectUser: (state) => state.user,
-    selectIsAuthChecked: (state) => state.isAuthChecked
+    selectIsAuthenticated: (state) => state.isAuthenticated,
+    selectIsAuthChecked: (state) => state.isAuthChecked,
+    selectLoginRequest: (state) => state.loginRequest
   }
 });
 
-export const { selectUser, selectIsAuthChecked } = userSlice.selectors;
+export const {
+  selectUser,
+  selectIsAuthenticated,
+  selectIsAuthChecked,
+  selectLoginRequest
+} = userSlice.selectors;
+
+export const login = loginUser;
+export const register = registerUser;
+
 export default userSlice.reducer;

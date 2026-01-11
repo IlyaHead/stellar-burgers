@@ -108,7 +108,8 @@ const App = () => {
           <Route
             path='/feed/:number'
             element={
-              <Modal title={'Информация о заказе'} onClose={closeModal}>
+              /* Передаем пустую строку в title, чтобы убрать крупный заголовок */
+              <Modal title={''} onClose={closeModal}>
                 <OrderInfo />
               </Modal>
             }
@@ -125,7 +126,7 @@ const App = () => {
             path='/profile/orders/:number'
             element={
               <ProtectedRoute>
-                <Modal title={'Информация о заказе'} onClose={closeModal}>
+                <Modal title={''} onClose={closeModal}>
                   <OrderInfo />
                 </Modal>
               </ProtectedRoute>

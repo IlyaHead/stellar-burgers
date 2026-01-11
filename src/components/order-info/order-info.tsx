@@ -3,10 +3,11 @@ import { useParams } from 'react-router-dom';
 import { useDispatch, useSelector } from '../../services/store';
 import { selectIngredients } from '../../services/slices/ingredientsSlice';
 import {
-  selectUserOrders,
   fetchOrderByNumber,
   selectOrderData
 } from '../../services/slices/orderSlice';
+import { selectOrders as selectFeedsOrders } from '../../services/slices/feedsSlice';
+import { selectUserOrders } from '../../services/slices/orderSlice';
 import { TIngredient } from '@utils-types';
 import { OrderInfoUI } from '../ui/order-info';
 
@@ -15,10 +16,19 @@ export const OrderInfo: FC = () => {
   const dispatch = useDispatch();
 
   const ingredients = useSelector(selectIngredients);
-  const orders = useSelector(selectUserOrders);
-  const orderData =
-    orders.find((o) => o.number === Number(number)) ||
-    useSelector(selectOrderData);
+
+  const userOrders = useSelector(selectUserOrders);
+  const feedsOrders = useSelector(selectFeedsOrders);
+  const fetchedOrder = useSelector(selectOrderData);
+
+  const orderData = useMemo(() => {
+    const num = Number(number);
+    return (
+      userOrders.find((o) => o.number === num) ||
+      feedsOrders.find((o) => o.number === num) ||
+      (fetchedOrder?.number === num ? fetchedOrder : null)
+    );
+  }, [number, userOrders, feedsOrders, fetchedOrder]);
 
   useEffect(() => {
     if (!orderData && number) {
