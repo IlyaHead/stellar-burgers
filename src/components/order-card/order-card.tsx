@@ -1,7 +1,7 @@
 import { useLocation } from 'react-router-dom';
 import { FC, useMemo } from 'react';
 import { useSelector } from '../../services/store';
-import { selectIngredients } from '../../services/slices/ingredientsSlice';
+import { selectIngredients } from '../../services/slices/ingredientsSlice/ingredientsSlice';
 import { OrderCardUI } from '@ui';
 import { TIngredient, TOrder } from '@utils-types';
 

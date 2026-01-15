@@ -7,9 +7,9 @@ import {
   updateUserApi,
   logoutApi,
   getUserApi
-} from '../../utils/burger-api';
+} from '../../../utils/burger-api';
 import { TUser } from '@utils-types';
-import { deleteCookie, setCookie } from '../../utils/cookie';
+import { deleteCookie, setCookie } from '../../../utils/cookie';
 
 interface TUserState {
   user: TUser | null;
@@ -19,7 +19,7 @@ interface TUserState {
   error: string | null;
 }
 
-const initialState: TUserState = {
+export const initialState: TUserState = {
   user: null,
   isAuthChecked: false,
   isAuthenticated: false,

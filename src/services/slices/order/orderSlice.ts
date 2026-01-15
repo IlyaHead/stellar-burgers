@@ -3,7 +3,7 @@ import {
   orderBurgerApi,
   getOrdersApi,
   getOrderByNumberApi
-} from '../../utils/burger-api';
+} from '../../../utils/burger-api';
 import { TOrder } from '@utils-types';
 
 // тип для ответов сервера
