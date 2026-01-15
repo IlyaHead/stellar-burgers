@@ -1,46 +1,108 @@
-import reducer, { loginUser, logoutUser, checkUserAuth } from './userSlice';
+import userReducer, {
+  registerUser,
+  loginUser,
+  logoutUser,
+  checkUserAuth, // Важно: было getUser
+  updateUser,
+  initialState
+} from './userSlice';
 
-describe('Тестирование userSlice', () => {
-  const initialState = {
-    user: null,
-    isAuthChecked: false,
-    isAuthenticated: false,
-    loginRequest: false,
-    error: null
+describe('Тестирование userSlice (асинхронные экшены)', () => {
+  const mockUser = {
+    email: 'test@burger.com',
+    name: 'Ivan Ivanov'
   };
 
-  const mockUser = { email: 'test@ya.ru', name: 'Tester' };
-
-  it('должен обрабатывать loginUser.pending', () => {
-    const state = reducer(initialState, { type: loginUser.pending.type });
-    expect(state.loginRequest).toBe(true);
-    expect(state.error).toBeNull();
+  describe('registerUser', () => {
+    // В твоем коде нет pending для registerUser, поэтому проверяем только fulfilled
+    it('состояние fulfilled', () => {
+      const state = userReducer(initialState, {
+        type: registerUser.fulfilled.type,
+        payload: mockUser // В твоем Thunk возвращается res.user напрямую
+      });
+      expect(state.user).toEqual(mockUser);
+      expect(state.isAuthenticated).toBe(true);
+      expect(state.isAuthChecked).toBe(true);
+    });
   });
 
-  it('должен обрабатывать loginUser.fulfilled', () => {
-    const action = { type: loginUser.fulfilled.type, payload: mockUser };
-    const state = reducer(initialState, action);
-    expect(state.isAuthenticated).toBe(true);
-    expect(state.user).toEqual(mockUser);
-    expect(state.isAuthChecked).toBe(true);
+  describe('loginUser', () => {
+    it('состояние pending', () => {
+      const state = userReducer(initialState, { type: loginUser.pending.type });
+      expect(state.loginRequest).toBe(true);
+      expect(state.error).toBeNull();
+    });
+
+    it('состояние fulfilled', () => {
+      const state = userReducer(initialState, {
+        type: loginUser.fulfilled.type,
+        payload: mockUser
+      });
+      expect(state.loginRequest).toBe(false);
+      expect(state.user).toEqual(mockUser);
+      expect(state.isAuthenticated).toBe(true);
+    });
+
+    it('состояние rejected', () => {
+      const state = userReducer(initialState, {
+        type: loginUser.rejected.type,
+        error: { message: 'Ошибка входа' }
+      });
+      expect(state.loginRequest).toBe(false);
+      expect(state.error).toBe('Ошибка входа');
+    });
   });
 
-  it('должен обрабатывать checkUserAuth.fulfilled', () => {
-    const action = { type: checkUserAuth.fulfilled.type, payload: mockUser };
-    const state = reducer(initialState, action);
-    expect(state.user).toEqual(mockUser);
-    expect(state.isAuthenticated).toBe(true);
-    expect(state.isAuthChecked).toBe(true);
+  describe('checkUserAuth (getUser)', () => {
+    it('состояние pending', () => {
+      const state = userReducer(initialState, {
+        type: checkUserAuth.pending.type
+      });
+      expect(state.isAuthChecked).toBe(false);
+    });
+
+    it('состояние fulfilled', () => {
+      const state = userReducer(initialState, {
+        type: checkUserAuth.fulfilled.type,
+        payload: mockUser
+      });
+      expect(state.user).toEqual(mockUser);
+      expect(state.isAuthenticated).toBe(true);
+      expect(state.isAuthChecked).toBe(true);
+    });
+
+    it('состояние rejected', () => {
+      const state = userReducer(initialState, {
+        type: checkUserAuth.rejected.type
+      });
+      expect(state.isAuthChecked).toBe(true);
+      expect(state.isAuthenticated).toBe(false);
+    });
   });
 
-  it('должен обрабатывать logoutUser.fulfilled', () => {
-    const loggedInState = {
-      ...initialState,
-      user: mockUser,
-      isAuthenticated: true
-    };
-    const state = reducer(loggedInState, { type: logoutUser.fulfilled.type });
-    expect(state.user).toBeNull();
-    expect(state.isAuthenticated).toBe(false);
+  describe('updateUser', () => {
+    it('состояние fulfilled', () => {
+      const updatedUser = { ...mockUser, name: 'New Name' };
+      const state = userReducer(initialState, {
+        type: updateUser.fulfilled.type,
+        payload: updatedUser
+      });
+      expect(state.user).toEqual(updatedUser);
+    });
+  });
+
+  describe('logoutUser', () => {
+    it('состояние fulfilled', () => {
+      const loggedInState = {
+        ...initialState,
+        user: mockUser,
+        isAuthenticated: true
+      };
+      const state = userReducer(loggedInState, {
+        type: logoutUser.fulfilled.type
+      });
+      expect(state.user).toBeNull();
+      expect(state.isAuthenticated).toBe(false);
+    });
   });
 });

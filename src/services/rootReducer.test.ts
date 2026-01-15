@@ -11,7 +11,6 @@ describe('Тестирование rootReducer', () => {
       type: 'UNKNOWN_ACTION'
     } as Action);
 
-    // Используем динамические имена из самих слайсов
     expect(initialState).toHaveProperty(ingredientsSlice.name);
     expect(initialState).toHaveProperty(userSlice.name);
     expect(initialState).toHaveProperty(constructorSlice.name);

@@ -14,6 +14,13 @@
       "type": "sauce",
       "price": 90,
       "image": "https://code.s3.yandex.net/react/code/sauce-02.png"
+    },
+    {
+      "_id": "643d69a5c3f7b9001cfa0943",
+      "name": "Биокотлета из марсианской нутрии",
+      "type": "main",
+      "price": 424,
+      "image": "https://code.s3.yandex.net/react/code/meat-03.png"
     }
   ]
 }
