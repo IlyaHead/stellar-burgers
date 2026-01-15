@@ -1,41 +1,92 @@
-describe('Проверка конструктора', () => {
-  const BUN_NAME = 'Краторная булка N-200i';
-  const MODAL = '[data-cy="modal"]';
-
+describe('Проверка функциональности конструктора бургеров', () => {
+  
   beforeEach(() => {
-    // Перехватываем все запросы
-    cy.intercept('GET', 'api/ingredients', { fixture: 'ingredients.json' });
-    cy.intercept('GET', 'api/auth/user', { fixture: 'user.json' });
+    cy.intercept('GET', 'api/ingredients', { fixture: 'ingredients.json' }).as('getIngredients');
+    cy.intercept('GET', 'api/auth/user', { fixture: 'user.json' }).as('getUser');
     cy.intercept('POST', 'api/orders', { fixture: 'order.json' }).as('postOrder');
 
-    // Устанавливаем токены в браузер, чтобы приложение считало нас залогиненными
-    cy.setCookie('accessToken', 'test-token');
-    window.localStorage.setItem('refreshToken', 'test-refresh-token');
-
     cy.visit('/');
+    cy.wait('@getIngredients');
+
+    cy.window().then((win) => {
+      win.localStorage.setItem('accessToken', 'test-access-token');
+    });
+    cy.setCookie('refreshToken', 'test-refresh-token');
   });
 
-  it('полный цикл оформления заказа', () => {
-    // 1. Добавляем ингредиент
-    cy.get('[data-cy="ingredient-643d69a5c3f7b9001cfa0941"]')
-      .find('button')
-      .click();
+  afterEach(() => {
+    cy.clearLocalStorage();
+    cy.clearCookies();
+  });
 
-    // 2. Кликаем оформить заказ
-    cy.get('[data-cy="order-button"]').click();
+  it('1. Проверка корректного отображения главной страницы', () => {
+    cy.get('h1').should('contain', 'Соберите бургер');
+  });
 
-    // 3. Ждем ответа от сервера
-    cy.wait('@postOrder');
+  it('2. Проверка добавления булки в рабочую область', () => {
+    cy.fixture('ingredients.json').then((data) => {
+      const ingredientsList = data.data || data;
+      const bun = ingredientsList.find((i: any) => i.type === 'bun');
+      
+      cy.get(`[data-cy="ingredient-${bun._id}"]`).find('button').click();
+      cy.get('[data-cy="burger-constructor"]').should('contain', bun.name);
+    });
+  });
 
-    // 4. Проверяем, что модалка открылась и там правильный номер заказа
-    cy.get(MODAL).should('be.visible');
-    cy.get('[data-cy="order-number"]').should('contain', '12345');
+  it('3. Проверка добавления основного ингредиента (начинки)', () => {
+    cy.fixture('ingredients.json').then((data) => {
+      const ingredientsList = data.data || data;
+      const main = ingredientsList.find((i: any) => i.type === 'main');
+      
+      cy.get(`[data-cy="ingredient-${main._id}"]`).find('button').click();
+      cy.get('[data-cy="burger-constructor"]').should('contain', main.name);
+    });
+  });
 
-    // 5. Закрываем модалку
+  it('4. Проверка открытия модального окна с описанием ингредиента', () => {
+    cy.fixture('ingredients.json').then((data) => {
+      const ingredientsList = data.data || data;
+      const ingredient = ingredientsList[0];
+      
+      cy.get(`[data-cy="ingredient-${ingredient._id}"] [data-cy="ingredient-link"]`).click();
+      cy.get('[data-cy="modal"]').should('be.visible').and('contain', ingredient.name);
+    });
+  });
+
+  it('5. Проверка закрытия модального окна кликом по крестику', () => {
+    cy.get('[data-cy="ingredient-link"]').first().click();
     cy.get('[data-cy="modal-close"]').click();
-    cy.get(MODAL).should('not.exist');
+    cy.get('[data-cy="modal"]').should('not.exist');
+  });
 
-    // 6. Проверяем, что конструктор очистился (булки больше нет)
-    cy.get('[data-cy="burger-constructor"]').should('not.contain', BUN_NAME);
+  it('6. Проверка закрытия модального окна кликом на оверлей или кнопкой Esc', () => {
+    cy.get('[data-cy="ingredient-link"]').first().click();
+    cy.get('[data-cy="modal-overlay"]').click({ force: true });
+    cy.get('[data-cy="modal"]').should('not.exist');
+    
+    cy.get('[data-cy="ingredient-link"]').first().click();
+    cy.get('body').type('{esc}');
+    cy.get('[data-cy="modal"]').should('not.exist');
+  });
+
+  it('7. Проверка полного цикла заказа и последующей очистки конструктора', () => {
+    cy.fixture('ingredients.json').then((data) => {
+      const ingredientsList = data.data || data;
+      const bun = ingredientsList.find((i: any) => i.type === 'bun');
+      const main = ingredientsList.find((i: any) => i.type === 'main');
+
+      cy.get(`[data-cy="ingredient-${bun._id}"]`).find('button').click();
+      cy.get(`[data-cy="ingredient-${main._id}"]`).find('button').click();
+
+      cy.get('[data-cy="order-button"]').click();
+      cy.wait('@postOrder');
+
+      cy.get('[data-cy="order-number"]').should('contain', '12345');
+      cy.get('[data-cy="modal-close"]').click();
+      
+      cy.get('[data-cy="burger-constructor"]')
+        .should('not.contain', bun.name)
+        .and('not.contain', main.name);
+    });
   });
 });
